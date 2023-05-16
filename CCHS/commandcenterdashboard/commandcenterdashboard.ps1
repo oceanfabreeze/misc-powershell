@@ -1,7 +1,9 @@
 #author=Thomas A. Fabrizio (801210714)
 #description=Cycle trhough command center dashboards in edge on PC boot.
-#version=1.3 Release Canidate
-#changelog= Added Cursor Logic and Logic to make sure edge stays running.
+#version=1.4 Release Canidate
+#changelog= 
+#(04/01/2023) Added Cursor Logic and Logic to make sure edge stays running.
+#(05/15/2023) Added Error-Test Function to check if page is logged in. 
 
 #Define functions
 
@@ -11,13 +13,37 @@ function Loop-check {
 	while($null -ne $Running){ 
 		$wshell=New-Object -ComObject wscript.shell;
 		$wshell.AppActivate('Edge'); # Activate on Edge browser
-		Start-Sleep 30; # Interval (in seconds) between switch 
+		Start-Sleep 23; # Interval (in seconds) between switch (ONLY MODIFY THIS VALUE)
 		$wshell.SendKeys('^{PGUP}'); # Ctrl + Page Up keyboard shortcut to switch tab
+		Start-Sleep 1; #Leave this Value Alone
 		$wshell.SendKeys('{F5}'); # F5 to refresh active page
+		Start-Sleep 1; #Leave this Value Alone
 		$Running = Get-Process msedge
+		Start-Sleep 5; #Leave this Value Alone. 
+		Error-Test
 	}
 	Start-edge
 	Loop-check
+}
+
+function Error-Test {  #Function to check if there is a login error. Tests the pagename and makes sure it says Command Center
+	$ErrorCondition	 = Get-Process |where {$_.mainWindowTItle} | format-table mainwindowtitle | Out-String -Stream | Select-String "Command Center" -quiet
+	if ($ErrorCondition -eq $null) {
+		$wshell=New-Object -ComObject wscript.shell;
+		$wshell.AppActivate('Edge');#Activate on edge
+		Start-Sleep 3;	
+		$wshell.SendKeys('{TAB}');
+		Start-Sleep 3;
+		[System.Windows.Forms.SendKeys]::SendWait("{ENTER}");
+		Start-Sleep 5;
+		[System.Windows.Forms.SendKeys]::SendWait("TestUser"); #Account Username
+		$wshell.SendKeys('{TAB}');
+		Start-Sleep 1;
+		$wshell.SendKeys('TestPassword'); #Account Password
+		$wshell.SendKeys('{TAB}');
+		[System.Windows.Forms.SendKeys]::SendWait("{ENTER}");
+
+	}
 }
 
 #Start edge runs to Start Edge and load the dashboards on script run, and if edge stops running during loop-check
