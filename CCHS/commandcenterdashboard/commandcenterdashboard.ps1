@@ -27,8 +27,8 @@ function Loop-check {
 }
 
 function Error-Test {  #Function to check if there is a login error. Tests the pagename and makes sure it says Command Center
-	$ErrorCondition	 = Get-Process |where {$_.mainWindowTItle} | format-table mainwindowtitle | Out-String -Stream | Select-String "Command Center" -quiet
-	if ($ErrorCondition -eq $null) {
+	$ErrorCondition	 = Get-Process | Where-Object {$_.mainWindowTItle} | format-table mainwindowtitle | Out-String -Stream | Select-String "Command Center" -quiet
+	if ($null -eq $ErrorCondition) {
 		$wshell=New-Object -ComObject wscript.shell;
 		$wshell.AppActivate('Edge');#Activate on edge
 		Start-Sleep 3;	
